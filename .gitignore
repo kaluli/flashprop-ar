@@ -1,0 +1,68 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files (nunca commitear)
+.env*.local
+.env
+.env.production
+.env.production.local
+.env.freedb-kaluli
+# .env.development.local = solo desarrollo (npm run dev), no subir
+
+# vercel
+.vercel
+.env.vercel.pulled
+.env.sync.vercel.prod
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma
+/prisma/migrations
+
+# logs
+*.log
+/tmp
+
+# database
+*.db
+*.sqlite
+
+# json temporal files
+pisos_*.json
+temp_import*.json
+
+# dumps y backups
+dump_*.sql
+backup-idealista-*.sql
+backup-prod-idealista-*.sql
+data-for-freedb.sql
+*.backup
+export_pisos_*.json
+
+# API antigua (importar por URL), ya no se usa
+app/api/import-url/

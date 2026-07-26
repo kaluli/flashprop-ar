@@ -1,0 +1,367 @@
+import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@prisma/client'
+import { listingNeighborhoodClause } from '@/lib/neighborhood-filter'
+import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
+
+const DB_ERROR_MESSAGE =
+  'No se pudo conectar a la base de datos. En Vercel: Settings → Environment Variables → DATABASE_URL (PostgreSQL / Neon).'
+
+/**
+ * Endpoint unificado: devuelve listings, stats, neighborhoods y provinces
+ * en UNA sola conexión a la BD. Reduce de 4 conexiones a 1 por carga de página.
+ */
+export async function GET(request: NextRequest) {
+  if (!process.env.DATABASE_URL?.trim()) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: DB_ERROR_MESSAGE,
+        data: {
+          listings: [],
+          stats: null,
+          neighborhoods: [],
+          provinces: [],
+          totalInDb: 0,
+        },
+      },
+      { status: 200, headers: { 'Cache-Control': 'no-store' } }
+    )
+  }
+
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const type = searchParams.get('type')
+    const neighborhood = searchParams.get('neighborhood')
+    const province = searchParams.get('province')
+    const maxPrice = searchParams.get('maxPrice')
+    const minSurfaceRaw = searchParams.get('minSurface')
+    const minSurfaceM2 =
+      minSurfaceRaw === '40' || minSurfaceRaw === '80'
+        ? Number(minSurfaceRaw)
+        : 40
+
+    const where: Prisma.ListingWhereInput = {}
+    if (type && (type === 'alquiler' || type === 'compra')) {
+      where.type = type
+    }
+    const nbClause = listingNeighborhoodClause(neighborhood)
+    if (nbClause) Object.assign(where, nbClause)
+    if (province && province !== 'all') {
+      where.province =
+        province === 'Madrid'
+          ? { in: ['Madrid', 'Alcalá de Henares'] }
+          : province
+    }
+    if (maxPrice && maxPrice !== 'all') {
+      const mp = parseFloat(maxPrice)
+      if (!Number.isNaN(mp)) {
+        where.price = { lte: mp }
+      }
+    }
+    where.surface = { gte: minSurfaceM2 }
+
+    // 1. Provincias (desde neighborhoods + listings)
+    const [nbProvinces, listingProvinces] = await Promise.all([
+      prisma.neighborhood.findMany({
+        select: { province: true },
+        distinct: ['province'],
+      }),
+      prisma.listing.findMany({
+        where: { province: { not: null } },
+        select: { province: true },
+        distinct: ['province'],
+      }),
+    ])
+    const allProvinces = new Set<string>()
+    for (const row of nbProvinces) {
+      if (row.province) allProvinces.add(row.province)
+    }
+    for (const row of listingProvinces) {
+      if (row.province) allProvinces.add(row.province)
+    }
+    const provinces = Array.from(allProvinces).sort()
+
+    // 2. Total sin filtros + listings filtrados (paginados)
+    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10) || 20))
+    const offset = (page - 1) * limit
+
+    // Stats y barrios se calculan sobre TODOS los filtrados; listings se devuelven paginados
+    const statsSelect = {
+      price: true,
+      surface: true,
+      rooms: true,
+      neighborhood: true,
+      type: true,
+    } as const
+
+    const [totalInDb, filteredCount, allFilteredListings, paginatedListings] = await Promise.all([
+      prisma.listing.count(),
+      prisma.listing.count({ where }),
+      prisma.listing.findMany({ where, select: statsSelect }),
+      prisma.listing.findMany({
+        where,
+        orderBy: [
+          { profitabilityRate: 'desc' },
+          { createdAt: 'desc' },
+        ],
+        take: limit,
+        skip: offset,
+      }),
+    ])
+
+    // 3. Stats calculadas desde TODOS los listings filtrados
+    const stats = computeStats(allFilteredListings, type ?? undefined)
+
+    // 4. Barrios únicos desde TODOS los listings filtrados
+    const neighborhoods = Array.from(
+      new Set(
+        allFilteredListings
+          .map((l) => l.neighborhood)
+          .filter((n): n is string => n !== null && n !== '')
+      )
+    ).sort()
+
+    const res = NextResponse.json({
+      success: true,
+      data: {
+        listings: paginatedListings,
+        stats,
+        neighborhoods,
+        provinces,
+        totalInDb,
+        filteredCount,
+        page,
+        limit,
+      },
+    })
+    res.headers.set(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, max-age=0'
+    )
+    return res
+  } catch (error) {
+    console.error('Error fetching home-data:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: DB_ERROR_MESSAGE,
+        data: {
+          listings: [],
+          stats: null,
+          neighborhoods: [],
+          provinces: [],
+          totalInDb: 0,
+        },
+      },
+      { status: 200, headers: { 'Cache-Control': 'no-store' } }
+    )
+  }
+}
+
+function computeStats(
+  listings: Array<{
+    price: number
+    surface: number | null
+    rooms: number | null
+    neighborhood: string | null
+    type: string
+  }>,
+  typeFilter?: string
+) {
+  if (listings.length === 0) {
+    return {
+      total: 0,
+      avgPrice: 0,
+      minPrice: 0,
+      maxPrice: 0,
+      avgSurface: 0,
+      minSurface: 0,
+      maxSurface: 0,
+      avgRooms: 0,
+      roomsDistribution: {} as Record<string, number>,
+      byNeighborhood: {} as Record<string, unknown>,
+    }
+  }
+
+  // Precio promedio de la home: siempre sobre compra (nunca alquiler ni mezcla).
+  const priceSourceListings =
+    !typeFilter || typeFilter === 'all' || typeFilter === 'compra'
+      ? listings.filter((l) => l.type === 'compra')
+      : listings
+  const prices = priceSourceListings.map((l) => l.price).filter((p) => p > 0)
+  const surfaces = listings
+    .map((l) => l.surface)
+    .filter((s): s is number => s !== null && s > 0)
+  const rooms = listings
+    .map((l) => l.rooms)
+    .filter((r): r is number => r !== null && r >= 0)
+
+  const avgPrice =
+    prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0
+
+  let avgPriceAlquiler: number | null = null
+  let avgPriceCompra: number | null = null
+  if (!typeFilter || typeFilter === 'all') {
+    const alquilerPrices = listings
+      .filter((l) => l.type === 'alquiler')
+      .map((l) => l.price)
+      .filter((p) => p > 0)
+    const compraPrices = prices
+    if (alquilerPrices.length > 0) {
+      avgPriceAlquiler =
+        alquilerPrices.reduce((a, b) => a + b, 0) / alquilerPrices.length
+    }
+    if (compraPrices.length > 0) {
+      avgPriceCompra =
+        compraPrices.reduce((a, b) => a + b, 0) / compraPrices.length
+    }
+  }
+
+  const avgSurface =
+    surfaces.length > 0
+      ? surfaces.reduce((a, b) => a + b, 0) / surfaces.length
+      : 0
+  const minSurface = surfaces.length > 0 ? Math.min(...surfaces) : 0
+  const maxSurface = surfaces.length > 0 ? Math.max(...surfaces) : 0
+  const avgRooms =
+    rooms.length > 0 ? rooms.reduce((a, b) => a + b, 0) / rooms.length : 0
+
+  const roomsDistribution: Record<string, number> = {}
+  listings.forEach((l) => {
+    const key = l.rooms === null ? 'N/A' : l.rooms.toString()
+    roomsDistribution[key] = (roomsDistribution[key] || 0) + 1
+  })
+
+  const byNeighborhood: Record<string, unknown> = {}
+  const neighborhoodNames = Array.from(
+    new Set(
+      listings
+        .map((l) => l.neighborhood)
+        .filter((n): n is string => n !== null && n !== '')
+    )
+  )
+
+  neighborhoodNames.forEach((neighborhood) => {
+    const neighborhoodListings = listings.filter(
+      (l) => l.neighborhood === neighborhood
+    )
+    // Precio medio por barrio: compra cuando no hay filtro de tipo.
+    const neighborhoodPriceListings =
+      !typeFilter || typeFilter === 'all' || typeFilter === 'compra'
+        ? neighborhoodListings.filter((l) => l.type === 'compra')
+        : neighborhoodListings
+    const neighborhoodPrices = neighborhoodPriceListings
+      .map((l) => l.price)
+      .filter((p) => p > 0)
+    const neighborhoodSurfaces = neighborhoodListings
+      .map((l) => l.surface)
+      .filter((s): s is number => s !== null && s > 0)
+    const neighborhoodRooms = neighborhoodListings
+      .map((l) => l.rooms)
+      .filter((r): r is number => r !== null && r >= 0)
+
+    const alquilerListings = neighborhoodListings.filter(
+      (l) => l.type === 'alquiler'
+    )
+    const compraListings = neighborhoodListings.filter(
+      (l) => l.type === 'compra'
+    )
+
+    let avgProfitability: number | null = null
+    let reliabilityPct: number | null = null
+
+    if (alquilerListings.length > 0 && compraListings.length > 0) {
+      const alquilerByRooms: Record<number, number[]> = {}
+      const compraByRooms: Record<number, number[]> = {}
+
+      alquilerListings.forEach((l) => {
+        if (l.rooms !== null && l.price > 0) {
+          if (!alquilerByRooms[l.rooms]) alquilerByRooms[l.rooms] = []
+          alquilerByRooms[l.rooms].push(l.price)
+        }
+      })
+      compraListings.forEach((l) => {
+        if (l.rooms !== null && l.price > 0) {
+          if (!compraByRooms[l.rooms]) compraByRooms[l.rooms] = []
+          compraByRooms[l.rooms].push(l.price)
+        }
+      })
+
+      const profitabilityRates: number[] = []
+      Object.keys(alquilerByRooms).forEach((roomsStr) => {
+        const rooms = parseInt(roomsStr)
+        if (compraByRooms[rooms]) {
+          const avgAlquiler =
+            alquilerByRooms[rooms].reduce((a, b) => a + b, 0) /
+            alquilerByRooms[rooms].length
+          const avgCompra =
+            compraByRooms[rooms].reduce((a, b) => a + b, 0) /
+            compraByRooms[rooms].length
+          if (avgCompra > 0) {
+            profitabilityRates.push((avgAlquiler * 12 / avgCompra) * 100)
+          }
+        }
+      })
+      if (profitabilityRates.length > 0) {
+        avgProfitability =
+          profitabilityRates.reduce((a, b) => a + b, 0) /
+          profitabilityRates.length
+      }
+      if (avgProfitability !== null) {
+        reliabilityPct = Math.min(
+          100,
+          Math.round(
+            25 +
+              (alquilerListings.length + compraListings.length) * 1.2 +
+              profitabilityRates.length * 12
+          )
+        )
+      }
+    }
+
+    if (neighborhoodPrices.length > 0) {
+      byNeighborhood[neighborhood] = {
+        total: neighborhoodListings.length,
+        avgPrice:
+          neighborhoodPrices.reduce((a, b) => a + b, 0) /
+          neighborhoodPrices.length,
+        minPrice: Math.min(...neighborhoodPrices),
+        maxPrice: Math.max(...neighborhoodPrices),
+        avgSurface:
+          neighborhoodSurfaces.length > 0
+            ? neighborhoodSurfaces.reduce((a, b) => a + b, 0) /
+              neighborhoodSurfaces.length
+            : 0,
+        avgRooms:
+          neighborhoodRooms.length > 0
+            ? neighborhoodRooms.reduce((a, b) => a + b, 0) /
+              neighborhoodRooms.length
+            : 0,
+        avgProfitability,
+        reliabilityPct,
+      }
+    }
+  })
+
+  return {
+    total: listings.length,
+    avgPrice: Math.round(avgPrice * 100) / 100,
+    minPrice,
+    maxPrice,
+    avgPriceAlquiler:
+      avgPriceAlquiler !== null ? Math.round(avgPriceAlquiler * 100) / 100 : null,
+    avgPriceCompra:
+      avgPriceCompra !== null ? Math.round(avgPriceCompra * 100) / 100 : null,
+    avgSurface: Math.round(avgSurface * 100) / 100,
+    minSurface,
+    maxSurface,
+    avgRooms: Math.round(avgRooms * 100) / 100,
+    roomsDistribution,
+    byNeighborhood,
+  }
+}

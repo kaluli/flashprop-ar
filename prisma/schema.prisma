@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  user
+  admin
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String?
+  role         UserRole @default(user)
+  province     String?  @db.VarChar(100)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+
+  listingStates UserListingState[]
+
+  @@map("users")
+}
+
+/// Seguimiento por usuario: citas, notas, ocultar en contactos (no borrado físico del listing).
+model UserListingState {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  listingId Int       @map("listing_id")
+  hiddenAt  DateTime? @map("hidden_at")
+  citaAt    DateTime? @map("cita_at")
+  contacto  String?   @db.VarChar(20)
+  phone     String?   @map("telefono") @db.VarChar(50)
+  notas     String?   @db.Text
+  llamado   Boolean   @default(false)
+  visitado  Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@index([listingId])
+  @@map("user_listing_states")
+}
+
+model Listing {
+  id                Int      @id @default(autoincrement())
+  title             String?  @db.VarChar(255)
+  price             Float
+  surface           Float?   @map("metros_cuadrados")
+  link              String   @db.VarChar(500)
+  profitabilityRate Float? @map("tasa_rentabilidad")
+  type              String   @db.VarChar(20)
+  neighborhood      String?  @map("barrio") @db.VarChar(100)
+  city              String?  @db.VarChar(100)
+  province          String?  @db.VarChar(100)
+  publishedAddress  String?  @map("direccion_publicada") @db.VarChar(255)
+  rooms             Int?     @map("habitaciones")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  userStates UserListingState[]
+
+  @@index([type])
+  @@index([neighborhood])
+  @@index([city])
+  @@index([province])
+  @@map("listings")
+}
+
+model Neighborhood {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  province  String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([province, name])
+  @@index([province])
+  @@map("neighborhoods")
+}

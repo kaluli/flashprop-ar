@@ -1,0 +1,425 @@
+/* App shell — fijo, alineado con idealista-pro-makeover (tokens globales) */
+
+.root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: hsl(var(--card) / 0.92);
+  border-bottom: 1px solid hsl(var(--border));
+  backdrop-filter: saturate(160%) blur(12px);
+  box-shadow: var(--shadow-sm, 0 1px 2px hsl(222 47% 11% / 0.04));
+}
+
+.inner {
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: var(--app-header-height, 4rem);
+  padding: 0 16px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  text-decoration: none;
+  color: hsl(var(--foreground));
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.brand:hover {
+  opacity: 0.9;
+}
+
+.brandMark {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(
+    --gradient-brand,
+    linear-gradient(135deg, hsl(222 47% 14%) 0%, hsl(224 70% 28%) 100%)
+  );
+  color: hsl(var(--primary-foreground));
+  box-shadow: var(--shadow-glow, 0 12px 32px -8px hsl(224 100% 59% / 0.35));
+  flex-shrink: 0;
+}
+
+.brandMarkSvg {
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+/* Flash + Prop (acento en Prop) */
+.brandNameLine {
+  display: block;
+  font-family: var(--font-stack-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.brandNameFlash {
+  font-weight: 800;
+  color: hsl(var(--foreground));
+}
+
+.brandNameProp {
+  font-weight: 800;
+  color: hsl(var(--accent, 224 100% 59%));
+  background: var(
+    --gradient-accent,
+    linear-gradient(135deg, hsl(224 100% 59%) 0%, hsl(199 95% 60%) 100%)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brandSub {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+/* Navegación central (tablet+) */
+.nav {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.navPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: var(--transition-base, all 0.2s ease);
+  white-space: nowrap;
+}
+
+.navPill:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--secondary));
+}
+
+.navPillActive {
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+  border-color: transparent;
+  box-shadow: 0 1px 2px hsl(222 47% 11% / 0.08);
+}
+
+.navPillActive:hover {
+  color: hsl(var(--primary-foreground));
+  background: hsl(222 47% 12%);
+}
+
+.navPillIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.navPillIcon svg {
+  color: currentColor;
+}
+
+/* Derecha: móvil solo hamburguesa; desktop hamburguesa oculta + herramientas */
+.right {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.authMobile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Menú desplegable: icono usuario → Perfil / Salir */
+.userMenu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.userMenuTrigger {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.userMenuTriggerOpen {
+  color: hsl(var(--foreground));
+  background: hsl(var(--secondary));
+  border-color: hsl(var(--border));
+}
+
+.userMenuPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  min-width: 11.5rem;
+  padding: 6px;
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  box-shadow:
+    0 4px 6px -1px hsl(222 47% 11% / 0.08),
+    0 10px 24px -4px hsl(222 47% 11% / 0.12);
+}
+
+.userMenuItem {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.userMenuItem:hover,
+.userMenuItem:focus-visible {
+  outline: none;
+  background: hsl(var(--secondary));
+}
+
+.userMenuItem:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--ring, 222 47% 50%));
+}
+
+.userMenuItemDanger {
+  color: hsl(var(--destructive));
+  margin-top: 4px;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 10px;
+}
+
+.userMenuItemDanger:hover,
+.userMenuItemDanger:focus-visible {
+  background: hsl(0 85% 97%);
+  color: hsl(var(--destructive));
+}
+
+@media (min-width: 768px) {
+  .authMobile {
+    display: none;
+  }
+}
+
+.authLink {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.authLinkLogin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.authLinkIcon {
+  flex-shrink: 0;
+  color: currentColor;
+  opacity: 0.92;
+}
+
+.authLink:hover {
+  color: hsl(var(--foreground));
+}
+
+.authLinkBtn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.authLinkBtn:hover {
+  color: hsl(var(--foreground));
+}
+
+.burgerOnly {
+  display: flex;
+  align-items: center;
+}
+
+.rightExtras {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Móvil: solo marca + hamburguesa; Ajustes y DB van a md+ */
+@media (max-width: 767.98px) {
+  .rightExtras {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .burgerOnly {
+    display: none;
+  }
+}
+
+/* Ajustes: solo icono, junto al estado de la base de datos */
+.headerIconLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  transition: var(--transition-base, all 0.2s ease);
+}
+.headerIconLink:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--secondary));
+  border-color: transparent;
+}
+.headerIconLink:focus-visible {
+  outline: 2px solid hsl(var(--ring, 222 47% 50%));
+  outline-offset: 2px;
+}
+.headerIconLinkActive {
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+  border-color: transparent;
+  box-shadow: 0 1px 2px hsl(222 47% 11% / 0.08);
+}
+.headerIconLinkActive:hover {
+  color: hsl(var(--primary-foreground));
+  background: hsl(222 47% 12%);
+}
+.headerIconLink svg {
+  flex-shrink: 0;
+}
+
+.dbPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  line-height: 1.2;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbPillMuted {
+  color: hsl(var(--muted-foreground));
+}
+
+.dbPillError {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.3);
+  background: hsl(0 85% 98%);
+}
+
+.dbPillError .dbPillIcon {
+  color: hsl(var(--destructive));
+}
+
+.dbPillIcon {
+  display: inline-flex;
+  color: hsl(220 12% 50%);
+  flex-shrink: 0;
+}
+
+.dbDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(152 65% 40%);
+  flex-shrink: 0;
+}
+
+.dbPillError .dbDot {
+  background: hsl(var(--destructive));
+  animation: none;
+}
