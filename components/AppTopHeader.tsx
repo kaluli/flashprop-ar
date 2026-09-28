@@ -85,6 +85,28 @@ function IconNoticias({ className }: { className?: string }) {
   )
 }
 
+/** Rodillo de pintura — Reformas. */
+function IconReformas({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect width="16" height="6" x="2" y="2" rx="2" />
+      <path d="M10 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+      <rect width="4" height="6" x="8" y="16" rx="1" />
+    </svg>
+  )
+}
+
 function IconAjustes({ className }: { className?: string }) {
   return (
     <svg
@@ -229,6 +251,7 @@ export function AppTopHeader() {
   const isContactos = pathname === '/contactos' || pathname.startsWith('/contactos/')
   const isCalculadora = pathname === '/calculadora' || pathname.startsWith('/calculadora/')
   const isNoticias = pathname === '/noticias' || pathname.startsWith('/noticias/')
+  const isReformas = pathname === '/reformas' || pathname.startsWith('/reformas/')
   const isAdminUsuarios =
     pathname === '/admin/usuarios' || pathname.startsWith('/admin/usuarios/')
   const isAjustes = pathname === '/recomendaciones' || pathname.startsWith('/recomendaciones/')
@@ -291,17 +314,39 @@ export function AppTopHeader() {
             </span>
             Noticias
           </Link>
+          <Link
+            href="/reformas"
+            className={cn(styles.navPill, isReformas && styles.navPillActive)}
+            aria-current={isReformas ? 'page' : undefined}
+          >
+            <span className={styles.navPillIcon}>
+              <IconReformas />
+            </span>
+            Reformas
+          </Link>
           {session?.user?.role === 'admin' ? (
-            <Link
-              href="/admin/usuarios"
-              className={cn(styles.navPill, isAdminUsuarios && styles.navPillActive)}
-              aria-current={isAdminUsuarios ? 'page' : undefined}
-            >
-              <span className={styles.navPillIcon}>
-                <IconUsers />
-              </span>
-              Usuarios
-            </Link>
+            <>
+              <Link
+                href="/admin/ajustes"
+                className={cn(styles.navPill, pathname.startsWith('/admin/ajustes') && styles.navPillActive)}
+                aria-current={pathname.startsWith('/admin/ajustes') ? 'page' : undefined}
+              >
+                <span className={styles.navPillIcon}>
+                  <IconAjustes />
+                </span>
+                Ajustes
+              </Link>
+              <Link
+                href="/admin/usuarios"
+                className={cn(styles.navPill, isAdminUsuarios && styles.navPillActive)}
+                aria-current={isAdminUsuarios ? 'page' : undefined}
+              >
+                <span className={styles.navPillIcon}>
+                  <IconUsers />
+                </span>
+                Usuarios
+              </Link>
+            </>
           ) : null}
         </nav>
 

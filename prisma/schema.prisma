@@ -63,6 +63,7 @@ model Listing {
   link              String   @db.VarChar(500)
   profitabilityRate Float? @map("tasa_rentabilidad")
   type              String   @db.VarChar(20)
+  currency          String   @default("USD") @db.VarChar(3)
   neighborhood      String?  @map("barrio") @db.VarChar(100)
   city              String?  @db.VarChar(100)
   province          String?  @db.VarChar(100)
@@ -90,4 +91,14 @@ model Neighborhood {
   @@unique([province, name])
   @@index([province])
   @@map("neighborhoods")
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(100)
+  value     String?  @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy Int?     @map("updated_by")
+
+  @@map("settings")
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdminSession } from '@/lib/require-admin'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { extractListingsFromHtml } = require('../../../lib/parse-idealista-html')
+const { extractListingsFromHtml } = require('../../../lib/parse-zonaprop-html')
 
 const DB_ERROR_MESSAGE = 'No se pudo conectar a la base de datos. Verifica DATABASE_URL.'
 

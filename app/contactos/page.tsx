@@ -22,6 +22,7 @@ interface Listing {
   surface: number | null
   link: string
   type: 'alquiler' | 'compra'
+  currency: string
   neighborhood: string | null
   city: string | null
   province: string | null
@@ -1457,10 +1458,10 @@ export default function ContactosPage() {
     }
   }
 
-  const formatPrice = (price: number) =>
+  const formatPrice = (price: number, currency?: string) =>
     new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
+      currency: currency || 'USD',
       maximumFractionDigits: 0,
     }).format(price)
 
@@ -1490,7 +1491,7 @@ export default function ContactosPage() {
         {a.rooms != null ? `${a.rooms} hab.` : '— hab.'} · {a.surface != null ? `${a.surface} m²` : '— m²'}
       </p>
       <div className={styles.similarDialogItemLine}>
-        <span className={styles.similarDialogRent}>Alquiler: {formatPrice(a.price)}/mes</span>
+        <span className={styles.similarDialogRent}>Alquiler: {formatPrice(a.price, a.currency)}/mes</span>
         <span
           className={styles.similarDialogProfit}
           title="Bruta anual: (alquiler mensual × 12) / precio de compra del piso de esta fila"
@@ -1625,7 +1626,7 @@ export default function ContactosPage() {
                                   imgClassName={styles.linkIdealistaImg}
                                 />
                               </td>
-                              <td className={styles.cellPrice}>{formatPrice(row.price)}</td>
+                              <td className={styles.cellPrice}>{formatPrice(row.price, row.currency)}</td>
                               <td className={styles.cellEditable}>{formatCita(row.citaAt)}</td>
                               <td className={styles.cellNotas}>
                                 {row.notas ? (
@@ -1766,7 +1767,7 @@ export default function ContactosPage() {
                                   imgClassName={styles.linkIdealistaImg}
                                 />
                               </td>
-                              <td className={styles.cellPrice}>{formatPrice(row.price)}</td>
+                              <td className={styles.cellPrice}>{formatPrice(row.price, row.currency)}</td>
                               <td className={styles.cellEditable}>{formatCita(row.citaAt)}</td>
                               <td className={styles.cellNotas}>
                                 {row.notas ? (
@@ -2052,7 +2053,7 @@ export default function ContactosPage() {
                                 imgClassName={styles.linkIdealistaImg}
                               />
                             </td>
-                            <td className={styles.cellPrice}>{formatPrice(row.price)}</td>
+                            <td className={styles.cellPrice}>{formatPrice(row.price, row.currency)}</td>
                             <td className={styles.cellEditable}>{formatCita(row.citaAt)}</td>
                             <td className={styles.cellNotas}>
                               {row.notas ? (

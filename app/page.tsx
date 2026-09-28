@@ -15,6 +15,7 @@ interface Listing {
   link: string
   profitabilityRate: number | null
   type: 'alquiler' | 'compra'
+  currency: string
   neighborhood: string | null
   city: string | null
   province: string | null
@@ -381,10 +382,10 @@ export default function Home() {
     }
   }
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number, currency?: string) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
+      currency: currency || 'USD',
       maximumFractionDigits: 0,
     }).format(price)
   }
@@ -1001,7 +1002,7 @@ export default function Home() {
                 </div>
 
                 <div className={styles.listingInfo}>
-                  <div className={styles.price}>{formatPrice(listing.price)}</div>
+                  <div className={styles.price}>{formatPrice(listing.price, listing.currency)}</div>
                   {listing.province && (
                     <div className={styles.meta}>🏛️ Provincia: {listing.province}</div>
                   )}

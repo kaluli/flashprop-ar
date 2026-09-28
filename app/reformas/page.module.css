@@ -1,0 +1,296 @@
+/* Página Reformas — reutiliza tokens del design system (globals.css) */
+
+.page {
+  min-height: 100vh;
+  background: transparent;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 1.5rem 1rem 2.5rem;
+  font-family: var(--font-stack-body);
+  overflow-x: hidden;
+}
+
+.inner {
+  max-width: 1180px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* ---------------------------------------------------------------- header */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--card) / 0.9);
+  border: 1px solid hsl(var(--border) / 0.65);
+  border-radius: 9999px;
+  box-shadow: var(--shadow-sm, 0 1px 2px hsl(222 47% 11% / 0.04));
+}
+
+.kickerDot {
+  display: block;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: var(
+    --gradient-accent,
+    linear-gradient(135deg, hsl(224 100% 59%) 0%, hsl(199 95% 60%) 100%)
+  );
+  flex-shrink: 0;
+}
+
+.h1Row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.15rem 0 0 0;
+}
+
+.h1IconBadge {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+  color: hsl(0 0% 100%);
+  background: var(
+    --gradient-brand,
+    linear-gradient(135deg, hsl(222 47% 14%) 0%, hsl(224 70% 28%) 100%)
+  );
+  box-shadow: var(--shadow-glow, 0 12px 32px -8px hsl(224 100% 59% / 0.3));
+}
+
+.h1IconBadge svg {
+  display: block;
+}
+
+.h1TextBlock {
+  min-width: 0;
+  font-family: var(--font-stack-heading, inherit);
+  font-size: clamp(1.65rem, 4.5vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: hsl(var(--foreground));
+}
+
+.h1Grad {
+  background: var(
+    --gradient-accent,
+    linear-gradient(135deg, hsl(224 100% 59%) 0%, hsl(199 95% 60%) 100%)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0 0;
+  max-width: 44rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+/* --------------------------------------------------------------- edición */
+.edition {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.editionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid hsl(var(--foreground) / 0.85);
+  font-family: var(--font-stack-heading, inherit);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: hsl(var(--foreground));
+}
+
+.count {
+  font-family: var(--font-stack-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.grid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+/* ------------------------------------------------------------------ card */
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.2rem 1.25rem;
+  background: hsl(var(--card) / 0.85);
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: var(--radius, 0.875rem);
+  box-shadow: var(--shadow-sm, 0 1px 2px hsl(222 47% 11% / 0.04));
+  backdrop-filter: blur(6px);
+}
+
+.modelBadge {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(224 90% 52%);
+}
+
+.modelName {
+  margin: 0.15rem 0 0.7rem;
+  font-family: var(--font-stack-heading, inherit);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: hsl(var(--foreground));
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0 0 0.75rem;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.fieldRow dt {
+  color: hsl(var(--muted-foreground));
+}
+
+.fieldRow dd {
+  margin: 0;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-align: right;
+}
+
+.desc {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+.total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.6rem;
+  margin: 0.1rem 0 0.6rem;
+  font-size: 0.9rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.total strong {
+  font-family: var(--font-stack-heading, inherit);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+}
+
+/* --------------------------------------------------------------- detalle */
+.details {
+  margin-top: auto;
+  border-top: 1px solid hsl(var(--border) / 0.6);
+  padding-top: 0.6rem;
+}
+
+.summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: hsl(224 90% 52%);
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::before {
+  content: '▸ ';
+}
+
+.details[open] .summary::before {
+  content: '▾ ';
+}
+
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.itemsTable td {
+  padding: 0.25rem 0.35rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  color: hsl(var(--foreground));
+}
+
+.itemsTable td:first-child {
+  color: hsl(var(--muted-foreground));
+}
+
+.itemPrice {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pageLink {
+  margin-top: 0.75rem;
+  width: fit-content;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+}
+
+.pageLink:hover {
+  color: hsl(224 90% 52%);
+  text-decoration: underline;
+}
