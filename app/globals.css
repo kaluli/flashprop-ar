@@ -78,9 +78,12 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Tipografía (idealista-pro-makeover: `src/index.css` + Google Fonts en index.html) */
-    --font-stack-body: var(--font-sans), 'Inter', system-ui, -apple-system, sans-serif;
-    --font-stack-heading: var(--font-display), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    /* Tipografía — fuentes cargadas vía <link> en layout.tsx
+       (evita el fetch de Google Fonts durante el build) */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --font-stack-body: var(--font-sans);
+    --font-stack-heading: var(--font-display);
   }
 
   .dark {
@@ -258,7 +261,7 @@
   --danger-500: hsl(var(--destructive));
   --t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --t-base: 220ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
-  /* --font-sans, --font-display, --font-stack-*: next/font (layout) + index */
+  /* --font-sans, --font-display, --font-stack-*: definidas en :root + <link> en layout.tsx */
 }
 
 /* Scrollbar (refinado) */
