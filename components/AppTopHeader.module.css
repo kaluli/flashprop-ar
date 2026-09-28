@@ -168,6 +168,28 @@
   color: currentColor;
 }
 
+/* Dropdown dentro del nav (p. ej. Reformas) */
+.navMenuWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.navMenuTrigger {
+  font: inherit;
+  cursor: pointer;
+}
+
+.caret {
+  width: 14px;
+  height: 14px;
+  margin-left: -2px;
+  transition: transform 0.15s ease;
+}
+
+.caretOpen {
+  transform: rotate(180deg);
+}
+
 /* Derecha: móvil solo hamburguesa; desktop hamburguesa oculta + herramientas */
 .right {
   display: flex;

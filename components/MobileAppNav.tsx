@@ -84,28 +84,6 @@ function IconCalculadora({ className }: { className?: string }) {
   )
 }
 
-function IconNoticias({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-      <path d="M18 14h-8" />
-      <path d="M15 18h-5" />
-      <path d="M10 6h8v4h-8V6z" />
-    </svg>
-  )
-}
-
 /** Rodillo de pintura — Reformas. */
 function IconReformasNav({ className }: { className?: string }) {
   return (
@@ -170,19 +148,19 @@ function IconUsersNav({ className }: { className?: string }) {
   )
 }
 
-/** Móvil: Gestor → Contactos → Calculadora → Noticias; Usuarios y Ajustes solo admin */
+/** Móvil: Gestor → Contactos → Calculadora → Reformas; admin en el menú */
 const coreNavItems = [
   { href: '/', label: 'Gestor', type: 'gestor' as const },
   { href: '/contactos', label: 'Contactos', type: 'contactos' as const },
   { href: '/calculadora', label: 'Calculadora', type: 'calculadora' as const },
-  { href: '/noticias', label: 'Noticias', type: 'noticias' as const },
   { href: '/reformas', label: 'Reformas', type: 'reformas' as const },
+  { href: '/reformas/calculadora', label: 'Calculadora de Reformas', type: 'reformas' as const },
 ] as const
 
 type NavItem =
   | (typeof coreNavItems)[number]
-  | { href: '/recomendaciones'; label: 'Ajustes'; type: 'ajustes' }
-  | { href: '/admin/ajustes'; label: 'Configuración'; type: 'admin' }
+  | { href: '/recomendaciones'; label: 'Importación'; type: 'ajustes' }
+  | { href: '/admin/ajustes'; label: 'Ajustes'; type: 'ajustes' }
   | { href: '/admin/usuarios'; label: 'Usuarios'; type: 'admin' }
 
 function MobileNavItemIcon({ item }: { item: NavItem }) {
@@ -198,13 +176,6 @@ function MobileNavItemIcon({ item }: { item: NavItem }) {
     return (
       <span className={styles.drawerLinkIconWrap} aria-hidden>
         <IconCalculadora className={ic} />
-      </span>
-    )
-  }
-  if (item.type === 'noticias') {
-    return (
-      <span className={styles.drawerLinkIconWrap} aria-hidden>
-        <IconNoticias className={ic} />
       </span>
     )
   }
@@ -296,8 +267,13 @@ function MobileNavOverlay() {
         type: 'admin',
       })
       list.push({
-        href: '/recomendaciones',
+        href: '/admin/ajustes',
         label: 'Ajustes',
+        type: 'ajustes',
+      })
+      list.push({
+        href: '/recomendaciones',
+        label: 'Importación',
         type: 'ajustes',
       })
     }

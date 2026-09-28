@@ -63,28 +63,6 @@ function IconCalculadora({ className }: { className?: string }) {
   )
 }
 
-function IconNoticias({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-      <path d="M18 14h-8" />
-      <path d="M15 18h-5" />
-      <path d="M10 6h8v4h-8V6z" />
-    </svg>
-  )
-}
-
 /** Rodillo de pintura — Reformas. */
 function IconReformas({ className }: { className?: string }) {
   return (
@@ -144,29 +122,6 @@ function IconUser({ className }: { className?: string }) {
     >
       <circle cx="12" cy="8" r="4" />
       <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
-    </svg>
-  )
-}
-
-/** Varias cuentas — gestión de usuarios (solo admin). */
-function IconUsers({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   )
 }
@@ -244,17 +199,171 @@ function UserAccountMenu({ isPerfil }: { isPerfil: boolean }) {
   )
 }
 
+const ADMIN_MENU_ITEMS = [
+  { href: '/admin/ajustes', label: 'Ajustes' },
+  { href: '/admin/usuarios', label: 'Usuarios' },
+  { href: '/recomendaciones', label: 'Importación' },
+] as const
+
+/** Ruedita de administración: Ajustes / Usuarios / Importación (solo admin). */
+function AdminMenu() {
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    const onDocDown = (e: MouseEvent) => {
+      const el = wrapRef.current
+      if (el && !el.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const isActive = ADMIN_MENU_ITEMS.some(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+  )
+
+  return (
+    <div className={styles.userMenu} ref={wrapRef}>
+      <button
+        type="button"
+        className={cn(
+          styles.headerIconLink,
+          styles.userMenuTrigger,
+          open && styles.userMenuTriggerOpen,
+          isActive && styles.headerIconLinkActive
+        )}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        aria-label="Ajustes e importación"
+        title="Ajustes e importación"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <IconAjustes />
+      </button>
+      {open ? (
+        <div id={menuId} className={styles.userMenuPanel} role="menu" aria-orientation="vertical">
+          {ADMIN_MENU_ITEMS.map((item) => {
+            const current = pathname === item.href || pathname.startsWith(item.href + '/')
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                role="menuitem"
+                className={styles.userMenuItem}
+                aria-current={current ? 'page' : undefined}
+                onClick={() => setOpen(false)}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+const REFORMAS_ITEMS = [
+  { href: '/reformas', label: 'Reformas e Índices' },
+  { href: '/reformas/calculadora', label: 'Calculadora de Reformas' },
+] as const
+
+/** Nav "Reformas" con submenú (índices + calculadora). */
+function ReformasMenu() {
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    const onDocDown = (e: MouseEvent) => {
+      const el = wrapRef.current
+      if (el && !el.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const isActive = pathname === '/reformas' || pathname.startsWith('/reformas/')
+
+  return (
+    <div className={styles.navMenuWrap} ref={wrapRef}>
+      <button
+        type="button"
+        className={cn(styles.navPill, styles.navMenuTrigger, isActive && styles.navPillActive)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className={styles.navPillIcon}>
+          <IconReformas />
+        </span>
+        Reformas
+        <svg
+          className={cn(styles.caret, open && styles.caretOpen)}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open ? (
+        <div id={menuId} className={styles.userMenuPanel} role="menu" aria-orientation="vertical">
+          {REFORMAS_ITEMS.map((item) => {
+            const current =
+              pathname === item.href ||
+              (item.href !== '/reformas' && pathname.startsWith(item.href + '/'))
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                role="menuitem"
+                className={styles.userMenuItem}
+                aria-current={current ? 'page' : undefined}
+                onClick={() => setOpen(false)}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function AppTopHeader() {
   const pathname = usePathname()
   const { data: session, status: authStatus } = useSession()
   const isGestor = pathname === '/'
   const isContactos = pathname === '/contactos' || pathname.startsWith('/contactos/')
   const isCalculadora = pathname === '/calculadora' || pathname.startsWith('/calculadora/')
-  const isNoticias = pathname === '/noticias' || pathname.startsWith('/noticias/')
-  const isReformas = pathname === '/reformas' || pathname.startsWith('/reformas/')
-  const isAdminUsuarios =
-    pathname === '/admin/usuarios' || pathname.startsWith('/admin/usuarios/')
-  const isAjustes = pathname === '/recomendaciones' || pathname.startsWith('/recomendaciones/')
   const isPerfil = pathname === '/perfil' || pathname.startsWith('/perfil/')
 
   return (
@@ -304,50 +413,7 @@ export function AppTopHeader() {
             </span>
             Calculadora
           </Link>
-          <Link
-            href="/noticias"
-            className={cn(styles.navPill, isNoticias && styles.navPillActive)}
-            aria-current={isNoticias ? 'page' : undefined}
-          >
-            <span className={styles.navPillIcon}>
-              <IconNoticias />
-            </span>
-            Noticias
-          </Link>
-          <Link
-            href="/reformas"
-            className={cn(styles.navPill, isReformas && styles.navPillActive)}
-            aria-current={isReformas ? 'page' : undefined}
-          >
-            <span className={styles.navPillIcon}>
-              <IconReformas />
-            </span>
-            Reformas
-          </Link>
-          {session?.user?.role === 'admin' ? (
-            <>
-              <Link
-                href="/admin/ajustes"
-                className={cn(styles.navPill, pathname.startsWith('/admin/ajustes') && styles.navPillActive)}
-                aria-current={pathname.startsWith('/admin/ajustes') ? 'page' : undefined}
-              >
-                <span className={styles.navPillIcon}>
-                  <IconAjustes />
-                </span>
-                Ajustes
-              </Link>
-              <Link
-                href="/admin/usuarios"
-                className={cn(styles.navPill, isAdminUsuarios && styles.navPillActive)}
-                aria-current={isAdminUsuarios ? 'page' : undefined}
-              >
-                <span className={styles.navPillIcon}>
-                  <IconUsers />
-                </span>
-                Usuarios
-              </Link>
-            </>
-          ) : null}
+          <ReformasMenu />
         </nav>
 
         <div className={styles.right}>
@@ -373,17 +439,7 @@ export function AppTopHeader() {
                 Entrar
               </Link>
             )}
-            {session?.user?.role === 'admin' ? (
-              <Link
-                href="/recomendaciones"
-                className={cn(styles.headerIconLink, isAjustes && styles.headerIconLinkActive)}
-                aria-label="Ajustes"
-                title="Ajustes"
-                aria-current={isAjustes ? 'page' : undefined}
-              >
-                <IconAjustes />
-              </Link>
-            ) : null}
+            {session?.user?.role === 'admin' ? <AdminMenu /> : null}
             {session?.user?.role === 'admin' ? <HeaderDbPill /> : null}
           </div>
         </div>

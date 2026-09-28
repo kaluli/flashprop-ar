@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { reformasData } from './data'
 import styles from './page.module.css'
 
@@ -65,6 +66,27 @@ export default function ReformasPage() {
             Costos de reforma por edición: valor por m², variación mensual, superficie y
             detalle de rubros de cada MODELO.
           </p>
+          <Link href="/reformas/calculadora" className={styles.cta}>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <rect x="6" y="6" width="12" height="4" rx="1" fill="currentColor" fillOpacity="0.15" />
+              <line x1="8" y1="14" x2="10" y2="14" />
+              <line x1="14" y1="14" x2="16" y2="14" />
+              <line x1="8" y1="18" x2="10" y2="18" />
+              <line x1="14" y1="18" x2="16" y2="18" />
+            </svg>
+            Calculadora de Reformas
+          </Link>
         </header>
 
         {reformasData.map((edition) => (

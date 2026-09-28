@@ -66,3 +66,4 @@ export_pisos_*.json
 
 # API antigua (importar por URL), ya no se usa
 app/api/import-url/
+.env*
